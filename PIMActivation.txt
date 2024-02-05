@@ -1,0 +1,40 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "//Summarize and visualize the roles being activated in Azure AD PIM\r\n \r\n//Data connector required for this query - Azure Active Directory - Audit Logs\r\n \r\nAuditLogs\r\n| where OperationName == \"Add member to role completed (PIM activation)\"\r\n| extend ['Azure AD Role Name'] = tostring(TargetResources[0].displayName)\r\n| summarize Count=count()by ['Azure AD Role Name']\r\n| sort by Count\r\n| render barchart with (title=\"Count of Azure AD PIM activations by role\")",
+        "size": 0,
+        "title": "PIM Role Activations",
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "//Report when a user is added directly to an Azure AD role, bypassing PIM\r\n \r\n//Data connector required for this query - Azure Active Directory - Audit Logs\r\n \r\nAuditLogs\r\n| where OperationName has \"Add member to role outside of PIM\"\r\n| extend RoleName = tostring(TargetResources[0].displayName)\r\n| extend UserAdded = tostring(TargetResources[2].displayName)\r\n| extend Actor = tostring(parse_json(tostring(InitiatedBy.user)).userPrincipalName)\r\n| project TimeGenerated, OperationName, RoleName, UserAdded, Actor",
+        "size": 0,
+        "title": "Role added outside PIM",
+        "timeContext": {
+          "durationMs": 2592000000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces"
+      },
+      "name": "query - 1"
+    }
+  ],
+  "fallbackResourceIds": [
+    "/subscriptions/3f698536-9528-441a-a854-e8b55a63c8d2/resourcegroups/az-aa-prd-rsg-aad-logging/providers/microsoft.operationalinsights/workspaces/az-aa-prd-aad-logs",
+    "/subscriptions/3f698536-9528-441a-a854-e8b55a63c8d2/resourcegroups/az-aa-prd-rsg-aad-logging/providers/microsoft.operationalinsights/workspaces/gwle-ciscontrols"
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
